@@ -1,6 +1,7 @@
 package com.example.medictionaryapp
 
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,7 +30,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.medictionaryapp.dataSource.medications
 import com.example.medictionaryapp.ui.theme.MedicationViewModel
 import com.example.medictionaryapp.ui.theme.MyTheme
 import com.example.medictionaryapp.ui.theme.PreferencesActivity
@@ -56,11 +57,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    private fun navigateToPreferences() {
-        val intent = Intent(this, PreferencesActivity::class.java)
-        startActivity(intent)
-    }
 }
 
 
@@ -80,18 +76,26 @@ fun MEDictionaryApp() {
             AddMedicationScreen(navController = navController, viewModel = viewModel) // Pass the ViewModel to AddMedicationScreen
         }
     }
+
 }
+
 
 
 @Composable
 fun MainScreen(navController: NavController, viewModel: MedicationViewModel) {
     Surface(modifier = Modifier.fillMaxSize()) {
-        Column {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp), // Add horizontal padding for the buttons
+            verticalArrangement = Arrangement.Center, // Center content vertically
+        ) {
+            // Row containing MEDictionary text, Help button, and Settings button
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+
                 // Help button on the left
                 Button(
                     onClick = { navController.navigate("help") }
@@ -99,34 +103,48 @@ fun MainScreen(navController: NavController, viewModel: MedicationViewModel) {
                     Text("Help")
                 }
 
-                // Spacer to separate the buttons
-                Spacer(modifier = Modifier.weight(1f))
+                // MEDictionary text
+                Text(
+                    text = "MEDictionary",
+                    style = MaterialTheme.typography.headlineMedium,
+                )
 
                 // Settings button on the right
                 Button(
-                    onClick = { navController.navigate("settings") }
+                    onClick = { navigateToPreferences(navController.context) }
                 ) {
                     Text("Settings")
                 }
             }
 
-            LazyColumn {
-                items(viewModel.medications.value ?: emptyList()) { medication ->
-                    MedicationItem(name = medication.name, disease = medication.disease)
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp)) // Add space between the buttons and the "Add Medication" button
 
             // Button to navigate to Add Medication screen
             Button(
                 onClick = { navController.navigate("addMedication") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
             ) {
                 Text("Add Medication")
             }
+
+            // List of medications (in LazyColumn)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f) // Fill the available space between the buttons and the "Add Medication" button
+            ) {
+                items(viewModel.medications.value ?: emptyList()) { medication ->
+                    MedicationItem(name = medication.name, disease = medication.disease)
+                }
+            }
         }
     }
+}
+
+// Function to navigate to PreferencesActivity
+private fun navigateToPreferences(context: Context) {
+    val intent = Intent(context, PreferencesActivity::class.java)
+    context.startActivity(intent)
 }
 
 @Composable
